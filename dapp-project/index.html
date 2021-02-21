@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>FLIPPING</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+      crossorigin="anonymous"></script>
+    <script type="text/javascript" src="./web3.min.js"></script>
+    <script type="text/javascript" src="./abi.js"></script>
+    <script type="text/javascript" src="./main.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+  </head>
+  <body style="background-color:#CDD2D3;">
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h1 class="display-1">FLIP COIN BET</h1>
+
+      </div>
+    </div>
+    <div class="container">
+      <div>
+        <h3>Player Info:</h3>
+        <h5 style="margin:10px;">Address:</h5> <h6 style="margin:10px;"><span id="_player"></span></h6>
+        <h5 style="margin:10px;">Earnings ETH:</h5> <h6 style="margin:10px;"><span id="balance_player"></span></h6>
+        <button style="margin:5px; background-color:#DA643B; color:black; font-size:20px" type="button" id="payout_player" class="btn btn-primary">Withdraw Earnings</button>
+        <hr>
+        <div class="input-group mb-4">
+          <h5 style="margin:5px;">Amount Available To Bet ETH:</h5>   <h5 style="margin:5px;"><span  id="balance_available_output"></span></h5>
+        </div>
+        <h5 style="margin:30px;">Status:</h5>   <h6 style="margin:30px;"><span  id="result"></span></h6>
+
+        <h5>Place Your Bet</h5>
+        <h6>Minimum Bet is 0.001 ETH</h6>
+
+        <input style="width:200px; margin:0px;" type="text" id="amount_input" placeholder="Amount to Bet ETH" >
+        <button style="margin:5px;" type="button" id="place_bet_button" class="btn btn-primary">Place Bet & Flip</button>
+      </div>
+      <hr>
+      <div>
+        <h5>Only Owner</h5>
+        <h6>Amount To Deposit:</h6>
+
+          <input style="width:200px; margin:0px;" type="text" id="deposit_amount" placeholder="Amount to Deposit">
+          <button style="margin:5px;" type="button" id="deposit_funds_button" class="btn btn-primary">Deposit</button>
+
+      </div>
+          <button style="background-color:#DA643B; color:black; font-size:20px" type="button" id="withdraw_button" class="btn btn-primary">Withdraw All</button>
+    </div>
+  </body>
+</html>
