@@ -17,6 +17,7 @@ contract FlipCoin is Ownable, usingProvable {
         address player;
         uint amount;
         bool betPlaced;
+        uint decision;
     }
     struct Pending {
         bytes32 id;
@@ -34,21 +35,21 @@ contract FlipCoin is Ownable, usingProvable {
         provable_setProof(proofType_Ledger);
     }
 
-    event LogNewProbableQuery(address indexed player);
+    event LogNewProbableQuery(address indexed player, uint indexed amount, uint indexed decision);
     event generatedRandomNumber(uint indexed random_Number);
-    event betResult(address indexed player, uint amount, bool indexed result);
+    event betResult(address indexed player, uint indexed amount, bool indexed result);
     event contractFunded(address indexed owner, uint indexed amount);
     event playerWithdraw(address indexed player, uint indexed amount);
     event contractWithdraw(address indexed owner, uint indexed amount);
     event proofVerificationFail(bytes32 indexed Id);
 
 
-    function createBet () public payable {
+    function createBet (uint _betChoice) public payable {
         require(bets[msg.sender].betPlaced == false, "Bet already placed");
         require(msg.value >= minimumBet, "Minimum bet has to be above 0.001 ETH");
         require(contractBalance >= msg.value, "Not enough balance in the contract to support the bet");
 
-        Bet memory newBet = Bet(msg.sender, msg.value, true);
+        Bet memory newBet = Bet(msg.sender, msg.value, true, _betChoice);
         _insertBet(newBet);
 
         uint QUERY_EXECUTION_DELAY = 0;
@@ -59,7 +60,7 @@ contract FlipCoin is Ownable, usingProvable {
         _insertPending(newPending, queryId);
 
         contractBalance = contractBalance.sub(bets[msg.sender].amount);
-        emit LogNewProbableQuery(msg.sender);
+        emit LogNewProbableQuery(msg.sender, msg.value, _betChoice);
     }
 
     function __callback (bytes32 _queryId, string memory _result, bytes memory _proof) public {
@@ -67,28 +68,45 @@ contract FlipCoin is Ownable, usingProvable {
 
         if(provable_randomDS_proofVerify__returnCode(_queryId, _result, _proof) == 0){
             uint randomNumber = uint(keccak256(abi.encodePacked(_result))) % 2;
+            assert(randomNumber == 0 || randomNumber == 1);
             emit generatedRandomNumber(randomNumber);
             address _player = pendingBets[_queryId].player;
             uint _amount = pendingBets[_queryId].amount;
             uint _oracleCost = pendingBets[_queryId].queryPrice;
             uint _totalAmount = _amount.mul(2).sub(_oracleCost);
-            //whoever wins pays the Oracle fee
-            if (randomNumber == 0) {
-                playersBalance[_player] = playersBalance[_player].add(_totalAmount);
-                emit betResult(_player, _totalAmount, true);
-            }
-            else {
-                contractBalance = contractBalance.add(_totalAmount);
-                emit betResult(_player, _amount, false);
-            }
+            uint _decision = bets[_player].decision;
+            assert(_totalAmount <= _amount.mul(2));
+            _checkResult(_player, _totalAmount, randomNumber, _decision);
             delete bets[_player];
-            //_deleteBet(_player);
             delete pendingBets[_queryId];
-            //_deletePending(_queryId);
         }
         else {
             emit proofVerificationFail(_queryId);
         }
+    }
+
+    function _checkResult (
+      address _player,
+      uint _totalAmount,
+      uint _randomNumber,
+      uint _decision) private {
+      //whoever wins pays the Oracle fee
+      if (_randomNumber == 0 && _decision == 0) {
+          playersBalance[_player] = playersBalance[_player].add(_totalAmount);
+          emit betResult(_player, _totalAmount, true);
+      }
+      else if (_randomNumber == 0 && _decision == 1) {
+          contractBalance = contractBalance.add(_totalAmount);
+          emit betResult(_player, _totalAmount, false);
+      }
+      else if (_randomNumber == 1 && _decision == 1) {
+          playersBalance[_player] = playersBalance[_player].add(_totalAmount);
+          emit betResult(_player, _totalAmount, true);
+      }
+      else {
+          contractBalance = contractBalance.add(_totalAmount);
+          emit betResult(_player, _totalAmount, false);
+      }
     }
 
     function _insertBet (Bet memory newBet) private {
@@ -101,6 +119,7 @@ contract FlipCoin is Ownable, usingProvable {
 
     function depositFunds () public payable onlyOwner returns (uint) {
         contractBalance = contractBalance.add(msg.value);
+        assert(contractBalance >= msg.value);
         emit contractFunded(msg.sender, msg.value);
         return contractBalance;
     }
@@ -120,6 +139,7 @@ contract FlipCoin is Ownable, usingProvable {
         uint amountToWithdraw = contractBalance;
         require(amountToWithdraw > 0, "Contract balance is $0.00, there is nothing to withdraw");
         contractBalance = 0;
+        assert(contractBalance == 0);
         msg.sender.transfer(amountToWithdraw);
         emit contractWithdraw(msg.sender, amountToWithdraw);
         return contractBalance;
@@ -129,6 +149,7 @@ contract FlipCoin is Ownable, usingProvable {
         uint amounToPay = playersBalance[msg.sender];
         require(amounToPay > 0, "Your balance is $0.00, there is nothing to withdraw");
         playersBalance[msg.sender] = 0;
+        assert(playersBalance[msg.sender] == 0);
         msg.sender.transfer(amounToPay);
         emit playerWithdraw(msg.sender, amounToPay);
     }

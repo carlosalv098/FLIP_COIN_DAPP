@@ -32,13 +32,23 @@
         <div class="input-group mb-4">
           <h5 style="margin:5px;">Amount Available To Bet ETH:</h5>   <h5 style="margin:5px;"><span  id="balance_available_output"></span></h5>
         </div>
-        <h5 style="margin:30px;">Status:</h5>   <h6 style="margin:30px;"><span  id="result"></span></h6>
-
         <h5>Place Your Bet</h5>
         <h6>Minimum Bet is 0.001 ETH</h6>
-
+        <select id="betChoice">
+          <option value = "0">Head</option>
+          <option value = "1">Tail</option>
+        </select>
         <input style="width:200px; margin:0px;" type="text" id="amount_input" placeholder="Amount to Bet ETH" >
         <button style="margin:5px;" type="button" id="place_bet_button" class="btn btn-primary">Place Bet & Flip</button>
+        <hr>
+        <h3>Bet Info:</h3>
+        <h6 style="margin:8px;">Player:</h6>   <h6 style="margin:15px;"><span  style="color:green;" id="bet_player_output"></span></h6>
+        <h6 style="margin:8px;">Amount ETH:</h6>   <h6 style="margin:15px;"><span  style="color:green;"id="bet_amount_output"></span></h6>
+        <h6 style="margin:8px;">Head or Tail?:</h6>   <h6 style="margin:15px;"><span  style="color:green;"id="bet_decision_output"></span></h6>
+        <h6 style="margin:8px;">Bet Status:</h6>   <h6 style="margin:15px;"><span  style="color:green;"id="bet_status_output"></span></h6>
+        <h6 style="margin:8px;">Flip Result:</h6>   <h6 style="margin:15px;"><span  style="color:green;"id="oracle_response"></span></h6>
+        <h6 style="margin:8px;">Bet Result:</h6>   <h6 style="margin:15px;"><span  style="color:green;"id="bet_result_output"></span></h6>
+
       </div>
       <hr>
       <div>

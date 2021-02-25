@@ -26,6 +26,16 @@ abi = [
         "indexed": true,
         "name": "player",
         "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "decision",
+        "type": "uint256"
       }
     ],
     "name": "LogNewProbableQuery",
@@ -52,7 +62,7 @@ abi = [
         "type": "address"
       },
       {
-        "indexed": false,
+        "indexed": true,
         "name": "amount",
         "type": "uint256"
       },
@@ -130,7 +140,12 @@ abi = [
   },
   {
     "constant": false,
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "_betChoice",
+        "type": "uint256"
+      }
+    ],
     "name": "createBet",
     "outputs": [],
     "payable": true,

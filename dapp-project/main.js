@@ -3,7 +3,8 @@ var contractInstance;
 
 $(document).ready(function(){
   window.ethereum.enable().then(function(accounts){
-    contractInstance = new web3.eth.Contract(abi, "0xb41241be035C834d943a185ACC0aD28169197D7D", {from: accounts[0]});
+    contractInstance = new web3.eth.Contract(abi, "0x07A3919370175E4FD599D5503c9CB5c13108d786",
+    {from: accounts[0]});
   })
   .then(function(){
     contractInstance.methods.getPlayer().call().then(function(player){
@@ -51,37 +52,83 @@ function getPlayerAddress (){
 
 function placeBet(){
 
+  var choice = $("#betChoice").val();
   var amount = $("#amount_input").val();
   var config = {
     value: web3.utils.toWei(amount, "ether")
   };
 
-  contractInstance.methods.createBet().send(config)
+  contractInstance.methods.createBet(choice).send(config)
   .on("transactionHash", function(hash){
     console.log(hash);
-    $("#result").text("Creating Bet...")
+    $("#bet_player_output").text("");
+    $("#bet_amount_output").text("");
+    $("#bet_decision_output").text("");
+    $("#bet_status_output").text("Creating Bet...")
+    $("#oracle_response").text("");
+    $("#bet_result_output").text("");
   })
   .on("receipt", function(receipt){
     console.log(receipt);
-  })
+  });
 
   contractInstance.once('LogNewProbableQuery',{
       filter: {player: getPlayerAddress()},
       fromBlock: 'latest'
     }, function(error, event){
-          if (error) throw ("Error fetching events");
+          if (error) {
+              $("#bet_status_output").text("Error, bet has not been placed correctly")}
           balanceContract();
-          $("#result").text("Bet placed. Please wait for Oracle response.");
+          let betPlacedBy = event.returnValues.player;
+          let betAmount = event.returnValues.amount;
+          let betDecs = event.returnValues.decision;
+          var choice;
+          if(betDecs == 0){
+            choice = "Head";
+          }
+          else {
+            choice = "Tail";
+          }
+          $("#bet_player_output").text(betPlacedBy);
+          $("#bet_amount_output").text(betAmount/1000000000000000000);
+          $("#bet_decision_output").text(choice);
+          $("#bet_status_output").text("Bet has been placed, waiting for Oracle response");
   });
 
-  contractInstance.once('betResult',{
+  contractInstance.once('generatedRandomNumber', {
+      filter: {player: getPlayerAddress()},
+      fromBlock: 'latest'
+    }, function (error, event){
+          if (error) {
+              $("#bet_status_output").text("Error, Random number was not generated")}
+          else {
+              let randNum = event.returnValues.random_Number;
+              if (randNum == 0) {
+                  $("#oracle_response").text("Head");
+          }
+              else {
+                  $("#oracle_response").text("Tail");
+              }
+          }
+  });
+
+  contractInstance.once('betResult', {
       filter: {player: getPlayerAddress()},
       fromBlock: 'latest'
     }, function(error, event){
-          if (error) throw ("Error fetching events");
+          if (error) throw ("Error");
+          let result = event.returnValues.result;
+          let amount = event.returnValues.amount;
+          let amountEth = (amount/1000000000000000000);
+          if (result == true){
+            $("#bet_result_output").text("Congratulations! You won, " + amountEth + " ETH have been added to your Earnings balance");
+          }
+          else {
+            $("#bet_result_output").text("You have lost, but you can try again!");
+          }
           balancePlayer();
           balanceContract();
-          $("#result").text("Done.");
+          $("#bet_status_output").text("Bet has Finished");
   });
 }
 
@@ -89,7 +136,7 @@ function payoutPlayer(){
   contractInstance.methods.payoutPlayer().send()
   .on("transactionHash", function(){
       $("#result").text("Player Withdrawal in Process...");
-  })
+  });
 
   contractInstance.once('playerWithdraw',{
       filter: {player: getPlayerAddress()},
@@ -123,7 +170,7 @@ function deposit(){
   contractInstance.methods.depositFunds().send(config_1)
   .on("transactionHash", function(){
       $("#result").text("Funding Contract...")
-  })
+  });
 
   contractInstance.once('contractFunded',{
       filter: {player: getPlayerAddress()},
